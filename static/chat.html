@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<script type="module">
+    function generateRandomName() {
+        const names = ["Kenji", "Taro", "Yumi", "Kaito", "Xiao Li", "Xin Hua", "Shuai Qi", "Zhao Xun", "Jae Hee", "Su-ji", "Jeong Hoon", "Soo-jin", "Ananya", "Aditya", "Vivek", "Rohan", "Ayman", "Abdullah", "Amir", "Aisha", "Dmitriy", "Yuliya", "Kseniya", "Nikolai", "Javier", "Ana", "Juan", "Maria", "Luiz", "Helena", "Maria", "Pedro", "Benjamin", "Anna", "Markus", "Sophie", "Pauline", "Nicolas", "Julien", "Camille"];
+        const randomNameIndex = Math.floor(Math.random() * names.length);
+        return names[randomNameIndex];
+    }
+
+    import { createApp } from 'https://unpkg.com/petite-vue@0.4.1/dist/petite-vue.es.js?module'
+
+    let socket = null;
+    let messages = [];
+    let message = "";
+
+    const url = window.location.href;
+    const room = url.split('/').pop(); 
+    const username = generateRandomName();
+
+    function mounted() {
+        this.socket = new WebSocket("ws://127.0.0.1:8082/ws");
+
+        this.socket.onopen = () => {
+            let message = { room, username, type: "join", message: "", };
+            this.socket.send(JSON.stringify(message));
+        };
+
+        this.socket.onclose = event => {
+            let message = { room, username, type: "leave", message: "", };
+            this.socket.send(JSON.stringify(message));
+        };
+
+        this.socket.onerror = error => {
+            console.log("Socket Error: ", error);
+        };
+
+        this.socket.onmessage = event => {
+            this.messages.unshift(JSON.parse(event.data));
+        }
+    }
+
+    function sendMessage() {
+        let msg = { room, username, type:"message", message: this.message };
+        this.socket.send(JSON.stringify(msg));
+    }
+
+    createApp({
+        room,
+        username,
+
+        socket,
+        message,
+        messages,
+
+        sendMessage,
+
+        mounted,
+    }).mount("#app");
+</script>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Chat</title>
+    </head>
+    <body>
+        <div id="app" @vue:mounted="mounted">
+            <h2>Username: {{ username }}</h2>
+            <h2>Room: {{ room }}</h2>
+            <div class="flex gap-1">
+                <ol>
+                    <li><a href="/rooms/dragon">Dragon</a></li>
+                    <li><a href="/rooms/mermaid">Mermaid</a></li>
+                    <li><a href="/rooms/pegasus">Pegasus</a></li>
+                    <li><a href="/rooms/minotaur">Minotaur</a></li>
+                    <li><a href="/rooms/centaur">Centaur</a></li>
+                    <li><a href="/rooms/unicorn">Unicorn</a></li>
+                    <li><a href="/rooms/siren">Siren</a></li>
+                    <li><a href="/rooms/chimera">Chimera</a></li>
+                    <li><a href="/rooms/gorgon">Gorgon</a></li>
+                    <li><a href="/rooms/medusa">Medusa</a></li>
+                </ol>
+                <div class="flex-1">
+                    <div class="chat">
+                        <div v-for="m in messages">
+                            {{m.username}}: {{m.message}}
+                        </div>
+                    </div>
+
+                    <div>        
+                        <input type="text" v-model="message">
+                        <button @click="sendMessage">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+<style>
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.gap-1 { gap: 15px; }
+.chat { 
+    border: 2px solid black;
+    height: 300px; 
+    overflow: scroll;
+    padding: 5px;
+    display: flex;
+    flex-direction: column-reverse;
+}
+</style>
