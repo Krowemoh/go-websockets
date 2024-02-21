@@ -56,7 +56,6 @@ func wsConnections(w http.ResponseWriter, r *http.Request) {
         err = conn.ReadJSON(&msg)
         if err != nil {
             fmt.Println(err)
-            fmt.Println(msg)
             delete(clients, conn)
             return
         }
@@ -82,14 +81,14 @@ func processWsMessages() {
     }
 }
 
-func homePage(w http.ResponseWriter, r *http.Request) {
+func index(w http.ResponseWriter, r *http.Request) {
     http.ServeFile(w, r, "static/chat.html")
 }
 
 func main() {
     var port = ":8082"
 
-    http.HandleFunc("/",homePage)
+    http.HandleFunc("/",index)
     http.HandleFunc("/ws",wsConnections)
 
     go processWsMessages()
