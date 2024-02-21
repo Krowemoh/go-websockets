@@ -22,11 +22,8 @@ var clients = make(map[*websocket.Conn]Client)
 var processMessage = make(chan Message)
 
 var upgrader = websocket.Upgrader {
-    ReadBufferSize: 1024,
-    WriteBufferSize: 1024,
-    CheckOrigin: func(r *http.Request) bool { 
-        return true 
-    },
+    ReadBufferSize: 0,
+    WriteBufferSize: 0,
 }
 
 func wsConnections(w http.ResponseWriter, r *http.Request) {
