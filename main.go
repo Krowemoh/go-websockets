@@ -66,13 +66,14 @@ func processWsMessages() {
         msg := <-processMessage
 
         for conn, client := range clients {
-            if client.Room == msg.Room {
-                err := conn.WriteJSON(msg)
-                if err != nil {
-                    fmt.Println(err)
-                    conn.Close()
-                    delete(clients, conn)
-                }
+            if client.Room != msg.Room {
+                continue
+            }
+            err := conn.WriteJSON(msg)
+            if err != nil {
+                fmt.Println(err)
+                conn.Close()
+                delete(clients, conn)
             }
         }
     }
